@@ -34,18 +34,30 @@ class UserController extends Controller
             'phone' => 'required',
             'password' => ['required', 'min:6']
         ]);
-        $user = User::create(
-            [
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => Hash::make($request->password)
-            ]
-        );
+        if (User::where('email', $request['email'])->first() === null) {
+            $user = User::create(
+                [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'password' => Hash::make($request->password)
+                ]
+            );
 
-        return UserResource::make($user)->additional([
-            'token' => $user->createToken('midtrans')->plainTextToken
-        ]);
+            return response(array(
+                'message' => "Berhasil mendaftar",
+                "data" => $user,
+                'token' => $user->createToken('midtrans')->plainTextToken,
+                'success' => true
+            ), 200);
+        }
+
+        return response(array(
+            'message' => "Email sudah digunakan",
+            "data" => null,
+            'token' => null,
+            'success' => false
+        ), 401);
     }
     public function login(Request $request)
     {
@@ -55,41 +67,42 @@ class UserController extends Controller
             'password' => ['required', 'min:6']
         ]);
 
-        
 
-        if (!Auth::attempt($request->only('email', 'password')))
-        {
+
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'success' => false,
-                'message' => 'Email atau Password Anda salah'
-            ], 401);
+                'message' => 'Email atau Password Anda salah',
+                "data" => null,
+                'token' => null,
+                'success' => false
+            ], 404);
         }
 
-        User::where('email', $request['email']);
         $user = User::where('email', $request['email'])->firstOrFail();
 
-        $token = $user->createToken('midtrans')->plainTextToken;
-
-        return UserResource::make($user)->additional([
-            'token' => $token
-        ]);
+        return response(array(
+            'message' => "Berhasil login",
+            "data" => $user,
+            'token' => $user->createToken('midtrans')->plainTextToken,
+            'success' => true
+        ), 200);
     }
 
     public function google(Request $request)
     {
-        if (!Auth::attempt($request->only('email', 'password')))
-        {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             $this->store($request);
         }
 
-        User::where('email', $request['email'])->update(['foto' =>$request->foto]);
+        User::where('email', $request['email'])->update(['foto' => $request->foto]);
         $user = User::where('email', $request['email'])->firstOrFail();
 
-        $token = $user->createToken('cook4life')->plainTextToken;
-
-        return UserResource::make($user)->additional([
-            'token' => $token
-        ]);
+        return response(array(
+            'message' => "Berhasil login",
+            "data" => $user,
+            'token' => $user->createToken('midtrans')->plainTextToken,
+            'success' => true
+        ), 200);
     }
 
     public function fcm(Request $request)
@@ -100,8 +113,9 @@ class UserController extends Controller
         ]);
         $user->fcm = $request->fcm;
         $user->save();
-        return UserResource::make($user)->additional([
-            'status' => "sukses"
-        ]); 
+        return response(array(
+            'message' => "Berhasil update fcm",
+            'success' => true
+        ), 200);
     }
 }
