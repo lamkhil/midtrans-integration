@@ -28,10 +28,11 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function saldo(Request $request){
-        $order = Order::where('user_id','=',$request->user()->id)->where('status','=','SUCCESS');
+        $order = Order::where('user_id','=',$request->user()->id)->where('status','=','SUCCESS')->get();
         $sum = 0;
         foreach ($order as $item) {
-            $sum += $item->total;}
+            $sum += $item->total;
+        }
 
         return response(['saldo'=>$sum], 200);
     }
