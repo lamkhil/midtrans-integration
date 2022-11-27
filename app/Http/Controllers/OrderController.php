@@ -22,6 +22,7 @@ class OrderController extends Controller
             switch ($status_code) {
                 case '200':
                     $order->status = "SUCCESS";
+                    Notification::sendFcm($order, "Pembayaran berhasil", $order->user_id);
                     break;
                 case '201':
                     $order->status = "PENDING";
@@ -31,7 +32,6 @@ class OrderController extends Controller
                     break;
             }
             $order->save();
-            Notification::sendFcm($order, "Pembayaran berhasil", $order->user_id);
             return response('Ok', 200)->header('Content-Type', 'text/plain');
         } catch (\Exception $e) {
             return response('Error', 404)->header('Content-Type', 'text/plain');
