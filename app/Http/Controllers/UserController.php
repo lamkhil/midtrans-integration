@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,15 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    public function saldo(Request $request){
+        $order = Order::where('user_id','=',$request->user()->id)->where('status','=','SUCCESS');
+        $sum = 0;
+        foreach ($order as $item) {
+            $sum += $item->total;}
+
+        return response(['saldo'=>$sum], 200);
+    }
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -43,11 +53,11 @@ class UserController extends Controller
                     'password' => Hash::make($request->password)
                 ]
             );
+            $user['token'] = $user->createToken('midtrans')->plainTextToken;
 
             return response(array(
                 'message' => "Berhasil mendaftar",
                 "data" => $user,
-                'token' => $user->createToken('midtrans')->plainTextToken,
                 'success' => true
             ), 200);
         }
@@ -73,17 +83,16 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Email atau Password Anda salah',
                 "data" => null,
-                'token' => null,
                 'success' => false
             ], 404);
         }
 
         $user = User::where('email', $request['email'])->firstOrFail();
 
+        $user['token'] = $user->createToken('midtrans')->plainTextToken;
         return response(array(
             'message' => "Berhasil login",
             "data" => $user,
-            'token' => $user->createToken('midtrans')->plainTextToken,
             'success' => true
         ), 200);
     }
@@ -96,11 +105,10 @@ class UserController extends Controller
 
         User::where('email', $request['email'])->update(['foto' => $request->foto]);
         $user = User::where('email', $request['email'])->firstOrFail();
-
+        $user['token'] = $user->createToken('midtrans')->plainTextToken;
         return response(array(
             'message' => "Berhasil login",
             "data" => $user,
-            'token' => $user->createToken('midtrans')->plainTextToken,
             'success' => true
         ), 200);
     }
