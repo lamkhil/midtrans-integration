@@ -29,7 +29,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/order/topup', [OrderController::class, 'topup']);
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/fcm', [UserController::class, 'fcm']);
-    Route::post('/saldo', [UserController::class, 'saldo']);
+    Route::get('/saldo', [UserController::class, 'saldo']);
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
